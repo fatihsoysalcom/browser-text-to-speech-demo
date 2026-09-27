@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Text to Speech Demo</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        h1 { color: #0056b3; }
+        p { margin-bottom: 20px; }
+        textarea { width: 80%; max-width: 600px; height: 150px; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; box-sizing: border-box; }
+        select, button { padding: 10px 15px; margin-right: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        select { background-color: #e9ecef; border: 1px solid #ced4da; }
+        button { background-color: #007bff; color: white; }
+        button:hover { background-color: #0056b3; }
+        .controls { margin-bottom: 20px; }
+        #status { margin-top: 15px; color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>AI Voice Generator Demo (Browser TTS)</h1>
+    <p>This example demonstrates text-to-speech conversion directly in your web browser, simulating the core functionality of AI voice generators described in the article.</p>
+
+    <div class="controls">
+        <label for="languageSelect">Select Language:</label>
+        <select id="languageSelect">
+            <option value="en-US">English (US)</option>
+            <option value="tr-TR" selected>Türkçe (Turkish)</option>
+            <option value="es-ES">Español (Spanish)</option>
+            <option value="fr-FR">Français (French)</option>
+            <option value="de-DE">Deutsch (German)</option>
+        </select>
+        <button id="speakButton">Speak Text</button>
+        <button id="stopButton">Stop Speaking</button>
+    </div>
+
+    <textarea id="textToSpeak" placeholder="Enter text here...">
+Yapay zeka destekli ses üreteçleri, saniyeler içinde metinleri gerçeğe yakın, duygusal tonlamalara sahip seslere dönüştürebilme yeteneği sunuyor.
+    </textarea>
+
+    <div id="status"></div>
+
+    <script>
+        const textToSpeakElem = document.getElementById('textToSpeak');
+        const speakButton = document.getElementById('speakButton');
+        const stopButton = document.getElementById('stopButton');
+        const languageSelect = document.getElementById('languageSelect');
+        const statusDiv = document.getElementById('status');
+
+        // Check for browser support for the Web Speech API
+        if ('speechSynthesis' in window) {
+            // The Web Speech API provides text-to-speech capabilities natively.
+            // It abstracts away the complex AI models, offering a simple interface.
+
+            speakButton.addEventListener('click', () => {
+                const text = textToSpeakElem.value;
+                const lang = languageSelect.value;
+
+                if (text.trim() === '') {
+                    statusDiv.textContent = 'Please enter some text to speak.';
+                    return;
+                }
+
+                // Stop any ongoing speech before starting a new one
+                window.speechSynthesis.cancel();
+                statusDiv.textContent = '';
+
+                // Create a new SpeechSynthesisUtterance object.
+                // This object holds the text that will be spoken.
+                const utterance = new SpeechSynthesisUtterance(text);
+
+                // Set the language for the utterance.
+                // This is crucial for the browser's TTS engine to use the correct pronunciation,
+                // intonation, and often a language-specific voice, simulating an AI voice generator.
+                utterance.lang = lang;
+
+                // Optional: Event listeners for speech status
+                utterance.onstart = () => {
+                    statusDiv.textContent = 'Speaking...';
+                    speakButton.disabled = true;
+                    stopButton.disabled = false;
+                };
+                utterance.onend = () => {
+                    statusDiv.textContent = 'Speech finished.';
+                    speakButton.disabled = false;
+                    stopButton.disabled = true;
+                };
+                utterance.onerror = (event) => {
+                    statusDiv.textContent = `Error during speech: ${event.error}`; // e.g., if no voice for lang
+                    speakButton.disabled = false;
+                    stopButton.disabled = true;
+                };
+
+                // Speak the utterance.
+                // This initiates the text-to-speech process using the browser's built-in engine.
+                window.speechSynthesis.speak(utterance);
+            });
+
+            stopButton.addEventListener('click', () => {
+                // Stop any ongoing speech
+                window.speechSynthesis.cancel();
+                statusDiv.textContent = 'Speech stopped.';
+                speakButton.disabled = false;
+                stopButton.disabled = true;
+            });
+
+            // Initial state
+            stopButton.disabled = true;
+
+        } else {
+            statusDiv.textContent = 'Web Speech API is not supported in this browser. Please try Chrome, Edge, or Firefox.';
+            speakButton.disabled = true;
+            stopButton.disabled = true;
+            languageSelect.disabled = true;
+            textToSpeakElem.disabled = true;
+        }
+    </script>
+</body>
+</html>
